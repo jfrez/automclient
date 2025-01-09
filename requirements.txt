@@ -1,0 +1,9 @@
+PyQt5
+pyautogui
+pyperclip
+python-socketio
+numpy
+pygame
+Pillow
+opencv-python
+
