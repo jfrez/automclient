@@ -405,12 +405,11 @@ def click(image_to_find, xp, yp):
 
     adjusted_x = (offset_x / screenshot_np.shape[1]) * screen_width
     adjusted_y = (offset_y / screenshot_np.shape[0]) * screen_height 
+    #pyautogui.moveTo(x=new_startX, y=new_startY, duration=0.5)
 
-    pyautogui.moveTo(x=new_startX, y=new_startY, duration=0.5)
-
-    time.sleep(0.25)
+    
     pyautogui.click(x=new_startX, y=new_startY)
-    time.sleep(0.5)
+    
     return True
 
 

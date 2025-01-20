@@ -6,4 +6,4 @@ numpy
 pygame
 Pillow
 opencv-python
-
+pytesseract
