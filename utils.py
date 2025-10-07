@@ -1,18 +1,39 @@
 import json
 import os
 
+
 def load_config():
     """Carga la configuración desde el archivo config.json si existe."""
     if os.path.exists('config.json'):
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-            return config.get('token')
-    return None
+        try:
+            with open('config.json', 'r') as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return {}
+        return {
+            "token": config.get('token'),
+            "server": config.get('server')
+        }
+    return {}
 
-def save_config(token):
-    """Guarda el token en el archivo config.json."""
+
+def save_config(token=None, server=None):
+    """Guarda los valores de configuración proporcionados en el archivo config.json."""
+    config = {}
+    if os.path.exists('config.json'):
+        try:
+            with open('config.json', 'r') as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            config = {}
+
+    if token is not None:
+        config['token'] = token
+    if server is not None:
+        config['server'] = server
+
     with open('config.json', 'w') as f:
-        json.dump({"token": token}, f)
+        json.dump(config, f)
 
 def log(msg, sio, token):
     """Logea un mensaje y lo envía al servidor mediante socketio."""
