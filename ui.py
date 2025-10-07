@@ -5,12 +5,9 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QPixmap
-
-
-import os
-import json
 import time
 from communication import sio, CodeRunner, stop_signal
+from utils import load_config, save_config
 
 import pygame
 from sounds import generate_r2d2_hello_sound,generate_r2d2_yeah_sound,generate_r2d2_help_sound
@@ -64,7 +61,6 @@ class MainWindow(QMainWindow):
         self.button.setText("Connect/Disconnect")
         self.code_runner = CodeRunner("",0, stop_signal)
         self.setWindowIcon(QIcon('logo.ico'))
-        sio.token = self.obtener_token()
         QTimer.singleShot(10, self.conectar)
         
     def show_continue_button(self):
@@ -105,12 +101,16 @@ class MainWindow(QMainWindow):
         self.error()
 
     def conectar(self):
-        sio.token = self.obtener_token()
-        if sio.token:
+        config = self.obtener_config()
+        if config:
+            sio.token = config.get('token')
+            global server
+            server_url = config.get('server', server)
+            server = server_url
             try:
                 self.start()
                 sio.disconnect()
-                sio.connect(server, headers={"Authorization": sio.token})
+                sio.connect(server_url, headers={"Authorization": sio.token})
                 self.button.clicked.disconnect(self.conectar)
                 self.button.clicked.connect(self.desconectar)
                 self.conn()
@@ -120,21 +120,32 @@ class MainWindow(QMainWindow):
                 print(e)
                 self.error()
         else:
-            self.label.setText("Token not found.")
+            self.label.setText("Token or server not found.")
 
-    def obtener_token(self):
-        if os.path.exists('config.json'):
-            with open('config.json', 'r') as f:
-                config = json.load(f)
-                sio.token = config.get('token')
-                if sio.token:
-                    return sio.token
-        sio.token, ok = QInputDialog.getText(self, 'Input Dialog', 'Token:')
-        if ok and sio.token:
-            with open('config.json', 'w') as f:
-                json.dump({"token": sio.token}, f)
-            return sio.token
-        return None
+    def obtener_config(self):
+        config = load_config()
+
+        token = config.get('token')
+        if not token:
+            token, ok = QInputDialog.getText(self, 'Input Dialog', 'Token:')
+            if not ok or not token:
+                return None
+            config['token'] = token
+
+        server_url = config.get('server')
+        if not server_url:
+            server_url, ok = QInputDialog.getText(
+                self,
+                'Input Dialog',
+                'Servidor:',
+                text=server
+            )
+            if not ok or not server_url:
+                return None
+            config['server'] = server_url
+
+        save_config(token=config['token'], server=config['server'])
+        return config
 
     def desconectar(self):
         sio.disconnect()

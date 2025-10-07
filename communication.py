@@ -8,7 +8,8 @@ import os
 window = None
 sio = socketio.Client()
 stop_signal = {"stop": False}
-token = load_config()  # Carga el token desde la configuración
+config = load_config()  # Carga la configuración
+token = config.get('token')
 sio.token = token
 class CodeRunner(threading.Thread):
     def __init__(self, code,jobid, stop_signal):
@@ -25,7 +26,7 @@ class CodeRunner(threading.Thread):
         output="{}"
         try:
             from actions import dblclick_text,hover_simple,wait_exists, wait_exists_text,is_text_visible,click_text,rightclick,mkdir,up,down,right,left, press,press2, sleep, click, dblclick, wait_exists, exists, leer, escribir_texto, teclear, chatGPT, agregar_a_excel, email
-            sio.token = load_config()
+            sio.token = load_config().get('token')
             # Añadir las funciones importadas al namespace local
             local_namespace.update({
                 "up": up,
