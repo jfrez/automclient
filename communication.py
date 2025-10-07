@@ -1,6 +1,6 @@
 import socketio
 import threading
-from utils import load_config, save_config
+from utils import load_config, save_config, capture_screenshot_with_ui_metadata
 from PyQt5.QtWidgets import QApplication
 from contextlib import suppress
 import os
@@ -100,18 +100,12 @@ def disconnect():
 
 @sio.on('client_take_screenshot')
 def client_take_screenshot(code):
-    import pyautogui
-    import base64
-    from io import BytesIO
-
     sio.window.lookup()
 
     try:
-        screenshot = pyautogui.screenshot()
-        buffer = BytesIO()
-        screenshot.save(buffer, format='PNG')
-        screenshot_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-        sio.emit('screenshot_from_client', {"image": screenshot_base64, "token": sio.token})
+        payload = capture_screenshot_with_ui_metadata()
+        payload["token"] = sio.token
+        sio.emit('screenshot_from_client', payload)
         sio.window.conn()
         print("client_take_screenshot", sio.token)
     except Exception as e:
