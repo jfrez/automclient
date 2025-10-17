@@ -7,4 +7,4 @@ pygame
 Pillow
 opencv-python
 pytesseract
-uiautomation
+uiautomation; platform_system == "Windows"
